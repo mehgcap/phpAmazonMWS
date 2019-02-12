@@ -148,6 +148,7 @@ class AmazonMerchantShipmentCreator extends AmazonMerchantCore {
      * @return boolean <b>FALSE</b> if improper input
      */
     public function setAddress($a){
+		var_dump($a);
         if (empty($a) || !is_array($a)){
             $this->log("Tried to set ShipFromAddress to invalid values",'Warning');
             return false;
