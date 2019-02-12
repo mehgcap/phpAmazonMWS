@@ -128,7 +128,6 @@ abstract class AmazonCore{
      * @param array | string $config [optional] <p>This can be an array of valid configuration options, or an alternate config file if you want to override the contents of amazon-config.php.</p>
      */
     protected function __construct($s = null, $mock = false, $m = null, $config = null){
-		var_dump($config);
         if (is_null($config)){
             $config = __DIR__.'/../../amazon-config.php';
         }
@@ -375,7 +374,9 @@ abstract class AmazonCore{
             if(!isset($path["stores"]))
 				throw new Exception("No stores defined. Invalid configuration.");
 			foreach($path["stores"] as $storeName => $storeValues) {
-				if(!isset($storeValues['merchantId']) || !isset($storeValues['marketplaceId']) || !isset($storeValues['keyId']) || !isset($storeValues['secretKey']) || !isset($storeValues['serviceUrl']) || !isset($storeValues['MWSAuthToken']))
+				echo "Examining values for store $storeName<br>";
+				var_dump($storeValues);
+				if(!isset($storeValues['merchantId']) || !isset($storeValues['marketplaceId']) || !isset($storeValues['keyId']) || !isset($storeValues['secretKey']) || !isset($storeValues['MWSAuthToken']))
 					throw new Exception("Required key missing from configuration array for one or more store definitions.");
 			}
 			//save all the stores, now that we know they have the required fields
