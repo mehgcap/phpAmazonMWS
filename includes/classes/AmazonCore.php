@@ -395,7 +395,7 @@ abstract class AmazonCore{
 			//Name of custom log function to use
 			$this->config['logfunction'] = isset($path['logfunction']) ? $path['logfunction'] : '';
 			$this->config['muteLog'] = isset($path['muteLog']) ? $path['muteLog'] : false;
-			$this->urlbase = isset($path['AMAZON_SERVICE_URL'] ? rtrim($path['AMAZON_SERVICE_URL'], '/') . '/' : null;
+			$this->urlbase = isset($path['AMAZON_SERVICE_URL']) ? rtrim($path['AMAZON_SERVICE_URL'], '/') . '/' : null;
 		} else {
 			throw new Exception("The value given for the \$path parameter is not a valid type.");
 		}
