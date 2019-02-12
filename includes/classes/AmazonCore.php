@@ -446,6 +446,7 @@ abstract class AmazonCore{
 			if (!isset($s) && count($store)===1) {
 				$s=key($store);
 			}
+		}
         
         if(!array_key_exists($s, $store)){
             $this->log("Store $s does not exist!",'Warning');
