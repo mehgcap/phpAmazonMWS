@@ -956,7 +956,8 @@ abstract class AmazonCore{
 	protected function _calculateStringToSignV2(array $parameters) {
 		$data = 'POST';
 		$data .= "\n";
-		$endpoint = parse_url ($this->urlbase.$this->urlbranch);
+		echo "urlbase variable: " . $this->urlbase;
+		$endpoint = parse_url ($this->urlbase . $this->urlbranch);
 		$data .= $endpoint['host'];
 		$data .= "\n";
 		$uri = array_key_exists('path', $endpoint) ? $endpoint['path'] : null;
