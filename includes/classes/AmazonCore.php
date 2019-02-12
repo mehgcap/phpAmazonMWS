@@ -518,8 +518,12 @@ abstract class AmazonCore{
         if ($msg != false) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             
-            if (file_exists($this->configFile)){
+            if (!is_array($this->config) && file_exists($this->configFile)){
                 include($this->configFile);
+		} elseif(is_array($this->config)) }
+			    $logfunction = $this->config["logfunction"];
+				$muteLog = $this->config["muteLog"];
+				$userName = $this->config["userName"];
             } else {
                 throw new Exception("Config file does not exist!");
             }
