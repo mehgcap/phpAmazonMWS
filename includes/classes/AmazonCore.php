@@ -438,6 +438,7 @@ abstract class AmazonCore{
 			else {
 				$storeValues = $this->config["stores"][0];
 				$s = key($this->config["stores"][0]);
+			}
 		} else { //try to load from the file
 			if (empty($store) || !is_array($store)) {
 				throw new Exception("No stores defined!");
