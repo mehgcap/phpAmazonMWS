@@ -366,16 +366,10 @@ abstract class AmazonCore{
 		} elseif(is_string($path)) { //load the file
 			include($path);
 			$this->configFile = $path;
-			$this->setLogPath($logpath);
-			if (isset($AMAZON_SERVICE_URL)) {
-				$this->urlbase = rtrim($AMAZON_SERVICE_URL, '/') . '/';
-			}
 		} elseif(is_array($path)) {
 			if(!isset($path["stores"]))
 				throw new Exception("No stores defined. Invalid configuration.");
 			foreach($path["stores"] as $storeName => $storeValues) {
-				echo "Examining values for store $storeName<br>";
-				var_dump($storeValues);
 				$missingKeys = array();
 				if(!isset($storeValues['merchantId']))
 					$missingKeys[] = "merchantId";
@@ -394,12 +388,14 @@ abstract class AmazonCore{
 			$this->config['stores'] = $path['stores'];
 			//now set defaults for any missing non-store-specific settings
 			//the United States URL is used by default
-			$this->config['AMAZON_SERVICE_URL'] = isset($this->config['AMAZON_SERVICE_URL']) ? $this->config['AMAZON_SERVICE_URL'] : 'https://mws.amazonservices.com/';
+			$this->config['AMAZON_SERVICE_URL'] = isset($path['AMAZON_SERVICE_URL']) ? $path['AMAZON_SERVICE_URL'] : 'https://mws.amazonservices.com/';
 			//Location of log file to use
-			$this->config['logpath'] = isset($this->config['logpath']) ? $this->config['logpath'] : __DIR__.'/log.txt';
+			$this->config['logpath'] = isset($path['logpath']) ? $path['logpath'] : __DIR__.'/log.txt';
+			$this->setLogPath($this->config['logpath']);
 			//Name of custom log function to use
 			$this->config['logfunction'] = isset($path['logfunction']) ? $path['logfunction'] : '';
 			$this->config['muteLog'] = isset($path['muteLog']) ? $path['muteLog'] : false;
+			$this->urlbase = isset($path['AMAZON_SERVICE_URL'] ? rtrim($path['AMAZON_SERVICE_URL'], '/') . '/' : null;
 		} else {
 			throw new Exception("The value given for the \$path parameter is not a valid type.");
 		}
