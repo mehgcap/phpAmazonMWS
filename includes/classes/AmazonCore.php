@@ -99,7 +99,8 @@ abstract class AmazonCore{
     protected $throttleStop = false;
     protected $storeName;
     protected $options;
-    protected $config;
+    protected $config; //the array of configuration options
+    protected $configFile; //the path to the configuration file on disk
     protected $mockMode = false;
     protected $mockFiles;
     protected $mockIndex = 0;
@@ -124,7 +125,7 @@ abstract class AmazonCore{
      * @param array|string $m [optional] <p>The files (or file) to use in Mock Mode.
      * When Mock Mode is enabled, the object will retrieve one of these files
      * from the list to use as a response. See <i>setMock</i> for more information.</p>
-     * @param string $config [optional] <p>An alternate config file to set. Used for testing.</p>
+     * @param array | string $config [optional] <p>This can be an array of valid configuration options, or an alternate config file if you want to override the contents of amazon-config.php.</p>
      */
     protected function __construct($s = null, $mock = false, $m = null, $config = null){
         if (is_null($config)){
@@ -349,25 +350,46 @@ abstract class AmazonCore{
     }
     
     /**
-     * Set the config file.
+     * Set the config file or, if an array is provided, the values.
      * 
      * This method can be used to change the config file after the object has
-     * been initiated. The file will not be set if it cannot be found or read.
-     * This is useful for testing, in cases where you want to use a different file.
-     * @param string $path <p>The path to the config file.</p>
+     * been initiated. If $path is a string, it is assumed to be a file path. The file will not be set if it cannot be found or read.
+	 *
+	 * If $path is an array, it is checked for the essential values, which are used if they are all found. If any values are missing, this function throws.
+     * This is useful for testing, in cases where you want to use a different file or set of configuration options.
+     * @param string $path <p>The path to the config file or the array of configuration options.</p>
      * @throws Exception If the file cannot be found or read.
      */
     public function setConfig($path){
-        if (file_exists($path) && is_readable($path)){
+        if (is_string($path) && (!file_exists($path) || !is_readable($path))){
+			throw new Exception("Config file does not exist or cannot be read! ($path)");
+		} elseif(is_string($path)) { //load the file
             include($path);
-            $this->config = $path;
+            $this->configFile = $path;
             $this->setLogPath($logpath);
             if (isset($AMAZON_SERVICE_URL)) {
                 $this->urlbase = rtrim($AMAZON_SERVICE_URL, '/') . '/';
             }
+        } elseif(is_array($path)) {
+            if(!isset($path["stores"]))
+				throw new Exception("No stores defined. Invalid configuration.");
+			foreach($path["stores"] as $storeName => $storeValues) {
+				if(!isset($storeValues['merchantId']) || !isset($storeValues['marketplaceId']) || !isset($storeValues['keyId']) || !isset($storeValues['secretKey']) || !isset($storeValues['serviceUrl']) || !isset($storeValues['MWSAuthToken']))
+					throw new Exception("Required key missing from configuration array for one or more store definitions.")
+			}
+			//save all the stores, now that we know they have the required fields
+			$this->config['stores'] = $path['stores'];
+			//now set defaults for any missing non-store-specific settings
+			//the United States URL is used by default
+			$this->config['AMAZON_SERVICE_URL'] = isset($this->config['AMAZON_SERVICE_URL']) ? $this->config['AMAZON_SERVICE_URL'] : 'https://mws.amazonservices.com/';
+			//Location of log file to use
+			$this->config['logpath'] = isset($this->config['logpath']) ? $this->config['logpath'] : __DIR__.'/log.txt';
+			//Name of custom log function to use
+			$this->config['logfunction'] = isset($path['logfunction']) ? $path['logfunction'] : '';
+			$this->'muteLog'] = isset($path['muteLog']) ? $path['muteLog'] : false;
         } else {
-            throw new Exception("Config file does not exist or cannot be read! ($path)");
-        }
+			throw new Exception("The value given for the \$path parameter is not a valid type.");
+		}
     }
     
     /**
@@ -394,54 +416,60 @@ abstract class AmazonCore{
     /**
      * Sets the store values.
      * 
-     * This method sets a number of key values from the config file. These values
+     * This method sets a number of key values from the config array, or, if the array is not set, from the configuration file. These values
      * include your Merchant ID, Access Key ID, and Secret Key, and are critical
      * for making requests with Amazon. If the store cannot be found in the
-     * config file, or if any of the key values are missing,
+     * config array/file, or if any of the key values are missing,
      * the incident will be logged.
      * @param string $s [optional] <p>The store name to look for.
-     * This parameter is not required if there is only one store defined in the config file.</p>
-     * @throws Exception If the file can't be found.
+     * This parameter is not required if there is only one store defined.</p>
+     * @throws Exception If the config array is not set, the stores array in the config array is empty or lacks a key named $s, or the config file can't be found.
      */
     public function setStore($s=null){
-        if (file_exists($this->config)){
-            include($this->config);
+        if (!isset($this->config) && file_exists($this->configFile)){
+            include($this->configFile);
         } else {
             throw new Exception("Config file does not exist!");
         }
         
-        if (empty($store) || !is_array($store)) {
-            throw new Exception("No stores defined!");
-        }
+        if(isset($this->config)) {
+			if(isset($s))
+				$storeValues = $this->config["stores"][$s];
+			else {
+				$storeValues = $this->config["stores"][0];
+				$s = key($this->config["stores"][0]);
+		} else { //try to load from the file
+			if (empty($store) || !is_array($store)) {
+				throw new Exception("No stores defined!");
+			}
+			if (!isset($s) && count($store)===1) {
+				$s=key($store);
+			}
         
-        if (!isset($s) && count($store)===1) {
-            $s=key($store);
-        }
-        
-        if(array_key_exists($s, $store)){
+        if(!array_key_exists($s, $store)){
+            $this->log("Store $s does not exist!",'Warning');
+		} else {
+			$storeValues = $store[$s];
             $this->storeName = $s;
-            if(array_key_exists('merchantId', $store[$s])){
-                $this->options['SellerId'] = $store[$s]['merchantId'];
+            if(array_key_exists('merchantId', $storeValues)){
+                $this->options['SellerId'] = $storeValues['merchantId'];
             } else {
                 $this->log("Merchant ID is missing!",'Warning');
             }
-            if(array_key_exists('keyId', $store[$s])){
-                $this->options['AWSAccessKeyId'] = $store[$s]['keyId'];
+            if(array_key_exists('keyId', $storeValues)){
+                $this->options['AWSAccessKeyId'] = $storeValues['keyId'];
             } else {
                 $this->log("Access Key ID is missing!",'Warning');
             }
-            if(!array_key_exists('secretKey', $store[$s])){
+            if(!array_key_exists('secretKey', $storeValues)){
                 $this->log("Secret Key is missing!",'Warning');
             }
-            if (!empty($store[$s]['serviceUrl'])) {
-                $this->urlbase = $store[$s]['serviceUrl'];
+            if (!empty($storeValues['serviceUrl'])) {
+                $this->urlbase = $storeValues['serviceUrl'];
             }
-            if (!empty($store[$s]['MWSAuthToken'])) {
-                $this->options['MWSAuthToken'] = $store[$s]['MWSAuthToken'];
+            if (!empty($storeValues['MWSAuthToken'])) {
+                $this->options['MWSAuthToken'] = $storeValues['MWSAuthToken'];
             }
-            
-        } else {
-            $this->log("Store $s does not exist!",'Warning');
         }
     }
     
@@ -473,8 +501,8 @@ abstract class AmazonCore{
         if ($msg != false) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             
-            if (file_exists($this->config)){
-                include($this->config);
+            if (file_exists($this->configFile)){
+                include($this->configFile);
             } else {
                 throw new Exception("Config file does not exist!");
             }
@@ -582,8 +610,8 @@ abstract class AmazonCore{
      * @throws Exception if config file or secret key is missing
      */
     protected function genQuery(){
-        if (file_exists($this->config)){
-            include($this->config);
+        if (file_exists($this->configFile)){
+            include($this->configFile);
         } else {
             throw new Exception("Config file does not exist!");
         }
