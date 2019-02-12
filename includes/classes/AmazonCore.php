@@ -128,6 +128,7 @@ abstract class AmazonCore{
      * @param array | string $config [optional] <p>This can be an array of valid configuration options, or an alternate config file if you want to override the contents of amazon-config.php.</p>
      */
     protected function __construct($s = null, $mock = false, $m = null, $config = null){
+		var_dump($config);
         if (is_null($config)){
             $config = __DIR__.'/../../amazon-config.php';
         }
