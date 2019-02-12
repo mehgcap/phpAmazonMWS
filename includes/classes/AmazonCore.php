@@ -520,9 +520,9 @@ abstract class AmazonCore{
 		if (!is_array($this->config) && file_exists($this->configFile)){
 			include($this->configFile);
 		} elseif(is_array($this->config)) { //grab the values we'll need in this function
-			$logfunction = $this->config["logfunction"];
-			$muteLog = $this->config["muteLog"];
-			$userName = $this->config["userName"];
+			$logfunction = isset($this->config["logfunction"]) ? $this->config["logfunction"] : null;
+			$muteLog = isset($this->config["muteLog"]) ? $this->config["muteLog"] : false;
+			$userName = isset($this->config["userName"]) ? $this->config["userName"] : null;
 		} else { //no file, no array... Error out
 			throw new Exception("Config file does not exist!");
 		}
