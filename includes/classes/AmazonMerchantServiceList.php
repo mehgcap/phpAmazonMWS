@@ -502,6 +502,7 @@ class AmazonMerchantServiceList extends AmazonMerchantCore implements Iterator{
            $xml = $this->fetchMockFile()->$path;
         } else {
             $response = $this->sendRequest($url, array('Post'=>$query));
+			var_dump($response);
 
             if (!$this->checkResponse($response)){
                 return false;
