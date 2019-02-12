@@ -444,14 +444,14 @@ abstract class AmazonCore{
 			}
 		}
 		
-		if(isset($this->config)) {
+		if(isset($this->config) && is_array($this->config)) {
 			if(isset($s))
 				$storeValues = $this->config["stores"][$s];
 			else {
 				$storeValues = $this->config["stores"][0];
 				$s = key($this->config["stores"][0]);
 			}
-		} else { //try to load from the file
+		} elseif(isset($this->config) && is_string($this->config)) { //try to load from the file
 			if (empty($store) || !is_array($store)) {
 				throw new Exception("No stores defined!");
 			}
@@ -462,6 +462,7 @@ abstract class AmazonCore{
 		
 		if(!array_key_exists($s, $store)){
 			$this->log("Store $s does not exist!",'Warning');
+			throw new Exception("Store \"{$s}\" does not exist.");
 		} else {
 			$storeValues = $store[$s];
 			$this->storeName = $s;
