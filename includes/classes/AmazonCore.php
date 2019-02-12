@@ -386,7 +386,7 @@ abstract class AmazonCore{
 			$this->config['logpath'] = isset($this->config['logpath']) ? $this->config['logpath'] : __DIR__.'/log.txt';
 			//Name of custom log function to use
 			$this->config['logfunction'] = isset($path['logfunction']) ? $path['logfunction'] : '';
-			$this->'muteLog'] = isset($path['muteLog']) ? $path['muteLog'] : false;
+			$this->config['muteLog'] = isset($path['muteLog']) ? $path['muteLog'] : false;
         } else {
 			throw new Exception("The value given for the \$path parameter is not a valid type.");
 		}
