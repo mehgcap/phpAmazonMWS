@@ -376,8 +376,19 @@ abstract class AmazonCore{
 			foreach($path["stores"] as $storeName => $storeValues) {
 				echo "Examining values for store $storeName<br>";
 				var_dump($storeValues);
-				if(!isset($storeValues['merchantId']) || !isset($storeValues['marketplaceId']) || !isset($storeValues['keyId']) || !isset($storeValues['secretKey']) || !isset($storeValues['MWSAuthToken']))
-					throw new Exception("Required key missing from configuration array for one or more store definitions.");
+				$missingKeys = array();
+				if(!isset($storeValues['merchantId']))
+					$missingKeys[] = "merchantId";
+				if(!isset($storeValues['marketplaceId']))
+					$missingKeys[] = "marketplaceId";
+				if(!isset($storeValues['keyId']))
+					$missingKeys[] = "keyId";
+				if(!isset($storeValues['secretKey']))
+					$missingKeys[] = "secretKey";
+				if(!isset($storeValues['MWSAuthToken']))
+					$missingKeys[] = "MWSAuthToken";
+				if(count($missingKeys) > 0)
+					throw new Exception("Configuration for $storeName store is missing the following required values: " . implode(", ", $missingKeys));
 			}
 			//save all the stores, now that we know they have the required fields
 			$this->config['stores'] = $path['stores'];
