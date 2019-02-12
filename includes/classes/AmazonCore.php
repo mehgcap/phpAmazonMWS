@@ -386,7 +386,6 @@ abstract class AmazonCore{
 			}
 			//save all the stores, now that we know they have the required fields
 			$this->config['stores'] = $path['stores'];
-			var_dump($this->config["stores"][0]);
 			//now set defaults for any missing non-store-specific settings
 			//the United States URL is used by default
 			$this->config['AMAZON_SERVICE_URL'] = isset($path['AMAZON_SERVICE_URL']) ? $path['AMAZON_SERVICE_URL'] : 'https://mws.amazonservices.com/';
@@ -448,8 +447,9 @@ abstract class AmazonCore{
 			if(isset($s))
 				$storeValues = $this->config["stores"][$s];
 			else {
-				$storeValues = $this->config["stores"][0];
-				$s = key($this->config["stores"][0]);
+				reset($this->config["stores"]);
+				$s = key($this->config["stores"]);
+				$storeValues = $this->config["stores"][$s];
 			}
 		} elseif(isset($this->config) && is_string($this->config)) { //try to load from the file
 			if (empty($store) || !is_array($store)) {
