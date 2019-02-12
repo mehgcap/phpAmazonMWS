@@ -458,33 +458,32 @@ abstract class AmazonCore{
 			if (!isset($s) && count($store)===1) {
 				$s=key($store);
 			}
+			if(!array_key_exists($s, $store)){
+				$this->log("Store $s does not exist!",'Warning');
+				throw new Exception("Store \"{$s}\" does not exist.");
+			}
+			$storeValues = $store[$s];
 		}
 		
-		if(!array_key_exists($s, $store)){
-			$this->log("Store $s does not exist!",'Warning');
-			throw new Exception("Store \"{$s}\" does not exist.");
+		$this->storeName = $s;
+		if(array_key_exists('merchantId', $storeValues)){
+			$this->options['SellerId'] = $storeValues['merchantId'];
 		} else {
-			$storeValues = $store[$s];
-			$this->storeName = $s;
-			if(array_key_exists('merchantId', $storeValues)){
-				$this->options['SellerId'] = $storeValues['merchantId'];
-			} else {
-				$this->log("Merchant ID is missing!",'Warning');
-			}
-			if(array_key_exists('keyId', $storeValues)){
-				$this->options['AWSAccessKeyId'] = $storeValues['keyId'];
-			} else {
-				$this->log("Access Key ID is missing!",'Warning');
-			}
-			if(!array_key_exists('secretKey', $storeValues)){
-				$this->log("Secret Key is missing!",'Warning');
-			}
-			if (!empty($storeValues['serviceUrl'])) {
-				$this->urlbase = $storeValues['serviceUrl'];
-			}
-			if (!empty($storeValues['MWSAuthToken'])) {
-				$this->options['MWSAuthToken'] = $storeValues['MWSAuthToken'];
-			}
+			$this->log("Merchant ID is missing!",'Warning');
+		}
+		if(array_key_exists('keyId', $storeValues)){
+			$this->options['AWSAccessKeyId'] = $storeValues['keyId'];
+		} else {
+			$this->log("Access Key ID is missing!",'Warning');
+		}
+		if(!array_key_exists('secretKey', $storeValues)){
+			$this->log("Secret Key is missing!",'Warning');
+		}
+		if (!empty($storeValues['serviceUrl'])) {
+			$this->urlbase = $storeValues['serviceUrl'];
+		}
+		if (!empty($storeValues['MWSAuthToken'])) {
+			$this->options['MWSAuthToken'] = $storeValues['MWSAuthToken'];
 		}
 	}
 	
