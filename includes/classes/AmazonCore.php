@@ -439,7 +439,7 @@ abstract class AmazonCore{
      * @throws Exception If the config array is not set, the stores array in the config array is empty or lacks a key named $s, or the config file can't be found.
      */
     public function setStore($s=null){
-        if (!isset($this->config)
+        if (!isset($this->config) {
 			if(file_exists($this->configFile)){
                 include($this->configFile);
             } else {
