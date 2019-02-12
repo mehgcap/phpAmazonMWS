@@ -375,7 +375,7 @@ abstract class AmazonCore{
 				throw new Exception("No stores defined. Invalid configuration.");
 			foreach($path["stores"] as $storeName => $storeValues) {
 				if(!isset($storeValues['merchantId']) || !isset($storeValues['marketplaceId']) || !isset($storeValues['keyId']) || !isset($storeValues['secretKey']) || !isset($storeValues['serviceUrl']) || !isset($storeValues['MWSAuthToken']))
-					throw new Exception("Required key missing from configuration array for one or more store definitions.")
+					throw new Exception("Required key missing from configuration array for one or more store definitions.");
 			}
 			//save all the stores, now that we know they have the required fields
 			$this->config['stores'] = $path['stores'];
