@@ -620,23 +620,27 @@ abstract class AmazonCore{
 	/**
 	 * Handles generation of the signed query string.
 	 * 
-	 * This method uses the secret key from the config file to generate the
+	 * This method uses the secret key from the config file (or, if set, the config array) to generate the
 	 * signed query string.
 	 * It also handles the creation of the timestamp option prior.
 	 * @return string query string to send to cURL
 	 * @throws Exception if config file or secret key is missing
 	 */
 	protected function genQuery(){
-		if (file_exists($this->configFile)){
-			include($this->configFile);
-		} else {
-			throw new Exception("Config file does not exist!");
-		}
-		
-		if (array_key_exists($this->storeName, $store) && array_key_exists('secretKey', $store[$this->storeName])){
-			$secretKey = $store[$this->storeName]['secretKey'];
-		} else {
-			throw new Exception("Secret Key is missing!");
+		if(is_string($this->config)) {
+			if (file_exists($this->configFile)){
+				include($this->configFile);
+				if (array_key_exists($this->storeName, $store) && array_key_exists('secretKey', $store[$this->storeName])){
+					$secretKey = $store[$this->storeName]['secretKey'];
+				} else {
+					throw new Exception("Secret Key is missing!");
+				}
+			} else {
+				throw new Exception("Config file does not exist!");
+			}
+		} elseif(is_array($this->config)) {
+			$store = $this->config["stores"][$this->storeName];
+			$secretKey = $store['secretKey'];
 		}
 		
 		unset($this->options['Signature']);
