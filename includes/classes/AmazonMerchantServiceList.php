@@ -496,7 +496,6 @@ class AmazonMerchantServiceList extends AmazonMerchantCore implements Iterator{
         $url = $this->urlbase.$this->urlbranch;
 
         $query = $this->genQuery();
-		var_dump($query);
 
         $path = $this->options['Action'].'Result';
         if ($this->mockMode){
