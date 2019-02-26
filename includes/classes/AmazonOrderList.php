@@ -219,7 +219,7 @@ class AmazonOrderList extends AmazonOrderCore implements Iterator{
         }
 
         //reset to store's default marketplace
-        if(is_string($this->config) {
+        if(is_string($this->config)) {
             if (file_exists($this->config)){
                 include($this->config);
             } else {
