@@ -658,7 +658,7 @@ abstract class AmazonCore{
 	 * @return array cURL response array
 	 */
 	protected function sendRequest($url,$param){
-		echo "<h2>URL</h2>
+		echo "<h2>URL</h2>";
 		var_dump($url);
 		echo "<h2>Parameter</h2>";
 		var_dump($param);
